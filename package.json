@@ -55,7 +55,7 @@
     "jsdom": "28.1.0",
     "lighthouse": "13.4.1",
     "ng-packagr": "22.1.1",
-    "playwright": "1.62.1",
+    "playwright": "1.65.1",
     "prettier": "3.9.6",
     "typescript": "6.0.3",
     "vitest": "4.1.10"

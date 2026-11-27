@@ -1,0 +1,129 @@
+<section class="reports" aria-labelledby="reports-title">
+  <div class="title-row">
+    <div>
+      <p class="eyebrow">Daily review · synthetic read model</p>
+      <h1 id="reports-title">Performance reports</h1>
+      <p class="lede">
+        Separate process, performance and data-quality evidence before drawing conclusions.
+      </p>
+    </div>
+    <span class="quality">{{ report.quality }} data</span>
+  </div>
+  <aside class="boundary" role="alert">
+    <strong>Not a broker statement</strong
+    ><span
+      >This report is synthetic, unreconciled and cannot authorize an order or represent official
+      account truth.</span
+    >
+  </aside>
+
+  <div class="summary-grid" aria-label="Daily synthetic report totals">
+    <article>
+      <span>Realized P&amp;L</span
+      ><strong data-sign="positive">{{ report.totals.realizedPnl | currency: 'USD' }}</strong
+      ><small>Unreconciled</small>
+    </article>
+    <article>
+      <span>Executions</span><strong>{{ report.totals.executions }}</strong
+      ><small>{{ report.totals.quantity | number }} shares</small>
+    </article>
+    <article>
+      <span>Gross amount</span><strong>{{ report.totals.gross | currency: 'USD' }}</strong
+      ><small>Fees {{ report.totals.fees | currency: 'USD' }}</small>
+    </article>
+    <article>
+      <span>Rule adherence</span><strong>{{ adherenceRate() | number: '1.0-0' }}%</strong
+      ><small
+        >{{ report.adherence.breached }} breach · {{ report.adherence.unknown }} unknown</small
+      >
+    </article>
+  </div>
+
+  <div class="analytics-grid">
+    <article class="panel pnl-panel" aria-labelledby="pnl-title">
+      <div class="panel-heading">
+        <div>
+          <p class="kicker">Intraday accumulation</p>
+          <h2 id="pnl-title">Realized P&amp;L trend</h2>
+        </div>
+        <strong data-sign="positive">+{{ report.totals.realizedPnl | currency: 'USD' }}</strong>
+      </div>
+      <svg viewBox="0 0 560 150" role="img" aria-labelledby="trend-title trend-desc">
+        <title id="trend-title">Synthetic realized profit and loss trend</title>
+        <desc id="trend-desc">
+          The synthetic series begins below zero and ends at positive thirty-four dollars and twenty
+          cents.
+        </desc>
+        <defs>
+          <linearGradient id="report-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#16876a" stop-opacity=".25" />
+            <stop offset="1" stop-color="#16876a" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        <path class="gridline" d="M0 30H560M0 80H560M0 130H560" />
+        <polygon class="area" [attr.points]="'0,150 ' + pnlPoints() + ' 560,150'" />
+        <polyline class="line" [attr.points]="pnlPoints()" />
+        <circle cx="560" cy="30" r="5" />
+      </svg>
+      <div class="axis"><span>09:30</span><span>15:00 UTC</span></div>
+    </article>
+
+    <article class="panel" aria-labelledby="strategy-title">
+      <p class="kicker">Outcome by playbook</p>
+      <h2 id="strategy-title">Strategy contribution</h2>
+      <ul class="strategies">
+        @for (strategy of report.strategies; track strategy.name) {
+          <li>
+            <div>
+              <strong>{{ strategy.name }}</strong
+              ><span>{{ strategy.executions }} executions</span>
+            </div>
+            <strong [attr.data-sign]="strategy.realizedPnl < 0 ? 'negative' : 'positive'">{{
+              strategy.realizedPnl | currency: 'USD'
+            }}</strong
+            ><span class="bar" [attr.data-sign]="strategy.realizedPnl < 0 ? 'negative' : 'positive'"
+              ><span [style.width.%]="strategyWidth(strategy.realizedPnl)"></span
+            ></span>
+          </li>
+        }
+      </ul>
+      <p class="limitation">
+        A positive synthetic outcome does not validate a strategy or predict future performance.
+      </p>
+    </article>
+  </div>
+
+  <article class="panel" aria-labelledby="quality-title">
+    <div class="panel-heading">
+      <div>
+        <p class="kicker">Fail-closed aggregation</p>
+        <h2 id="quality-title">Source quality</h2>
+      </div>
+      <span class="snapshot"
+        >Generated {{ report.generatedAt | date: 'shortTime' : 'UTC' }} UTC</span
+      >
+    </div>
+    <div class="source-table" role="table" aria-label="Synthetic report source quality">
+      <div class="source-row header" role="row">
+        <span role="columnheader">Source</span><span role="columnheader">State</span
+        ><span role="columnheader">Accepted</span><span role="columnheader">Rejected</span
+        ><span role="columnheader">Age</span>
+      </div>
+      @for (source of report.sources; track source.name) {
+        <div class="source-row" role="row">
+          <strong role="cell">{{ source.name }}</strong
+          ><span role="cell" class="source-state" [attr.data-quality]="source.quality">{{
+            source.quality
+          }}</span
+          ><span role="cell">{{ source.accepted }}</span
+          ><span role="cell">{{ source.rejected }}</span
+          ><span role="cell">{{ source.ageMinutes }} min</span>
+        </div>
+      }
+    </div>
+  </article>
+  <p class="snapshot-id">
+    Report {{ report.reportId }} · Evidence {{ report.evidenceHash }} · Synthetic and
+    non-authoritative
+  </p>
+</section>

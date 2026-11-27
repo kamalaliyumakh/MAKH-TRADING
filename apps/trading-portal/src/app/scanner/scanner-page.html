@@ -1,0 +1,212 @@
+<section class="scanner" aria-labelledby="scanner-title">
+  <div class="title-row">
+    <div>
+      <p class="eyebrow">Synthetic scanner snapshot</p>
+      <h1 id="scanner-title">Candidate scanner</h1>
+      <p class="lede">
+        Review versioned discovery evidence. A candidate is not a recommendation, risk approval, or
+        instruction to trade.
+      </p>
+    </div>
+    <span class="quality" [attr.data-quality]="run().quality">{{ run().quality }} data</span>
+  </div>
+
+  <aside class="warning" role="note">
+    <strong>Paper mode · Entry locked</strong>
+    <span>No action on this page can create, authorize, or submit an order.</span>
+  </aside>
+
+  <div class="stream-status" [attr.data-state]="realtimeState()" role="status" aria-live="polite">
+    <strong>Updates: {{ realtimeState() }}</strong>
+    <span>Scanner stream sequence {{ lastSequence() }}</span>
+    <span>{{ streamGuidance() }}</span>
+    @if (recoveryReason()) {
+      <span>{{ recoveryReason() }}</span>
+    }
+  </div>
+
+  @if (availability() === 'Loading') {
+    <div class="empty" role="status">Loading authoritative scanner evidence…</div>
+  } @else if (availability() === 'Denied') {
+    <div class="warning" role="alert">
+      <strong>Scanner access denied</strong>
+      <span
+        >No candidate evidence is displayed. Contact an administrator if access is required.</span
+      >
+    </div>
+  } @else if (availability() === 'Failed') {
+    <div class="warning" role="alert">
+      <strong>Scanner unavailable</strong>
+      <span>No candidate evidence is displayed because authoritative recovery failed.</span>
+    </div>
+  } @else if (availability() === 'Empty') {
+    <div class="empty" role="status">
+      The authoritative scanner snapshot contains no candidates.
+    </div>
+  } @else {
+    @if (correctionReason()) {
+      <aside class="warning correction" role="status">
+        <strong>Corrected snapshot</strong>
+        <span>{{ correctionReason() }}</span>
+      </aside>
+    }
+
+    <dl class="run-facts">
+      <div>
+        <dt>Preset</dt>
+        <dd>{{ run().presetName }} v{{ run().presetVersion }}</dd>
+      </div>
+      <div>
+        <dt>As of</dt>
+        <dd>{{ run().asOf | date: 'medium' : 'UTC' }} UTC</dd>
+      </div>
+      <div>
+        <dt>Calculation</dt>
+        <dd>{{ run().calculationVersion }}</dd>
+      </div>
+      <div>
+        <dt>Qualified</dt>
+        <dd>{{ qualifiedCount() }} of {{ run().candidates.length }}</dd>
+      </div>
+    </dl>
+
+    <section class="funnel-panel" aria-labelledby="funnel-title">
+      <div class="funnel-heading">
+        <div>
+          <p class="eyebrow">Qualification view</p>
+          <h2 id="funnel-title">Candidate funnel</h2>
+        </div>
+        <span>Synthetic run · {{ run().candidates.length }} inputs</span>
+      </div>
+      <ol class="funnel" aria-label="Candidate qualification stages">
+        @for (stage of funnel(); track stage.label) {
+          <li [attr.data-tone]="stage.tone">
+            <span>{{ stage.label }}</span
+            ><strong>{{ stage.count }}</strong>
+            <span class="funnel-bar"
+              ><span [style.width.%]="(stage.count / run().candidates.length) * 100"></span
+            ></span>
+          </li>
+        }
+      </ol>
+      <p>
+        Stage counts explain filtering only; they do not measure trade quality or expected return.
+      </p>
+    </section>
+
+    <details class="rules">
+      <summary>Preset rules and ranking explanation</summary>
+      <p>Price $3–$7 · RVOL at least 3× · public float at most 500,000 shares · gain 100%–600%.</p>
+      <p>
+        Qualified rows rank by RVOL, then dollar volume, then stable security identity. The required
+        gain range also adds an elevated-risk warning and never improves rank.
+      </p>
+    </details>
+
+    <div class="toolbar">
+      <label for="candidate-filter">Candidate state</label>
+      <select id="candidate-filter" #candidateFilter (change)="setFilter(candidateFilter.value)">
+        <option value="Qualified">Qualified</option>
+        <option value="All">All inputs</option>
+        <option value="Excluded">Excluded</option>
+      </select>
+      <span aria-live="polite">{{ rows().length }} records shown</span>
+    </div>
+
+    @if (rows().length === 0) {
+      <div class="empty" role="status">No records match this filter.</div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <caption>
+            Versioned synthetic scanner candidates
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Rank / symbol</th>
+              <th scope="col">Price</th>
+              <th scope="col">Gain</th>
+              <th scope="col">RVOL</th>
+              <th scope="col">Public float</th>
+              <th scope="col">Spread</th>
+              <th scope="col">Dollar volume</th>
+              <th scope="col">State / risk</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (candidate of rows(); track candidate.securityId) {
+              <tr>
+                <th scope="row">
+                  <span class="rank">{{ candidate.rank ?? '—' }}</span>
+                  <strong>{{ candidate.symbol }}</strong>
+                  <a [routerLink]="['/app/symbols', candidate.symbol]">Review symbol</a>
+                </th>
+                <td data-label="Price">
+                  {{
+                    candidate.price == null ? 'Unavailable' : (candidate.price | currency: 'USD')
+                  }}
+                </td>
+                <td data-label="Gain">
+                  <span class="metric-value">{{
+                    candidate.gainPercent == null
+                      ? 'Unavailable'
+                      : (candidate.gainPercent | number: '1.0-2') + '%'
+                  }}</span>
+                  @if (candidate.gainPercent != null) {
+                    <span class="microbar gain"
+                      ><span [style.width]="barWidth(candidate.gainPercent, 200)"></span
+                    ></span>
+                  }
+                </td>
+                <td data-label="RVOL">
+                  <span class="metric-value">{{
+                    candidate.relativeVolume == null
+                      ? 'Unavailable'
+                      : (candidate.relativeVolume | number: '1.1-2') + '×'
+                  }}</span>
+                  @if (candidate.relativeVolume != null) {
+                    <span class="microbar rvol"
+                      ><span [style.width]="barWidth(candidate.relativeVolume, 6)"></span
+                    ></span>
+                  }
+                </td>
+                <td data-label="Public float">
+                  {{
+                    candidate.publicFloat == null ? 'Unavailable' : (candidate.publicFloat | number)
+                  }}
+                </td>
+                <td data-label="Spread">
+                  {{
+                    candidate.spreadPercent == null
+                      ? 'Unavailable'
+                      : (candidate.spreadPercent | number: '1.2-2') + '%'
+                  }}
+                </td>
+                <td data-label="Dollar volume">
+                  {{
+                    candidate.dollarVolume == null
+                      ? 'Unavailable'
+                      : (candidate.dollarVolume | currency: 'USD' : 'symbol' : '1.0-0')
+                  }}
+                </td>
+                <td data-label="State / risk">
+                  <span class="state" [attr.data-state]="candidate.state">{{
+                    candidate.state
+                  }}</span>
+                  @if (candidate.extremeMoveRisk) {
+                    <span class="risk">Extreme move · elevated risk, not a buy signal</span>
+                  }
+                  @if (candidate.exclusionReason) {
+                    <span class="reason">{{ candidate.exclusionReason }}</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <p class="snapshot">Run {{ run().runId }} · Snapshot {{ run().snapshotHash.slice(0, 16) }}…</p>
+  }
+</section>

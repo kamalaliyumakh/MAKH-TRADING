@@ -1,0 +1,21 @@
+{
+  "$schema": "./environment.schema.json",
+  "name": "dev",
+  "dataClass": "synthetic-only",
+  "accountMode": "synthetic",
+  "entryLocked": true,
+  "telemetry": { "otlpRequired": false, "retentionDays": 7 },
+  "database": {
+    "version": "18",
+    "backupRetentionDays": 7,
+    "pointInTimeRestore": true,
+    "rpoMinutes": 5,
+    "rtoMinutes": 60,
+    "ownerRole": "makh_owner",
+    "migrationRole": "makh_migrator",
+    "runtimeRole": "makh_runtime",
+    "runtimeDdlAllowed": false
+  },
+  "identity": { "providerConfigured": false, "sharedKeyRingRequired": false, "certificateProtectionRequired": false, "rotationDays": 90, "recoveryExerciseRequired": true },
+  "trading": { "paperConnectivityAllowed": false, "liveConnectivityAllowed": false, "brokerCredentialsAllowed": false }
+}

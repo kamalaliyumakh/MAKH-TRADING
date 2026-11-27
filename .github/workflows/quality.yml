@@ -1,0 +1,182 @@
+name: Quality and security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build, test, and database verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - name: Enable pinned pnpm
+        run: corepack enable && corepack prepare pnpm@10.27.0 --activate
+      - name: Set up .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+      - name: Install PostgreSQL tools
+        run: sudo apt-get update && sudo apt-get install --yes postgresql
+      - name: Restore locked dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          dotnet restore MAKH.Trading.slnx --locked-mode
+      - name: Verify source and architecture
+        run: |
+          pnpm format:check
+          pnpm verify:angular
+          pnpm check:angular-boundaries
+          pnpm check:devsecops
+          pnpm verify:environments
+      - name: Build and test .NET
+        run: |
+          set -o pipefail
+          mkdir -p TestResults
+          dotnet build MAKH.Trading.slnx --no-restore --configuration Release
+          dotnet test MAKH.Trading.slnx --no-build --configuration Release --logger "trx;LogFilePrefix=dotnet-tests" --results-directory TestResults | tee TestResults/dotnet-tests.txt
+      - name: Build and test Angular
+        run: |
+          set -o pipefail
+          pnpm build:angular | tee TestResults/angular-build.txt
+          pnpm test:angular | tee TestResults/angular-tests.txt
+      - name: Verify public accessibility in Chromium
+        run: |
+          set -o pipefail
+          pnpm exec playwright install --with-deps chromium
+          pnpm serve:static:web-public > TestResults/public-server.txt 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:58580/ > /dev/null; then
+              break
+            fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              cat TestResults/public-server.txt
+              exit 1
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:58580/ > /dev/null
+          pnpm verify:public-axe | tee TestResults/public-axe.txt
+          pnpm verify:public-preferences | tee TestResults/public-preferences.txt
+          LIGHTHOUSE_OUTPUT_DIR=TestResults/public-lighthouse pnpm verify:public-lighthouse | tee TestResults/public-lighthouse.txt
+          pnpm verify:public-milestone | tee TestResults/public-milestone.txt
+      - name: Verify PostgreSQL roles and migrations
+        run: |
+          set -o pipefail
+          ./eng/verify-postgres-foundation.sh | tee TestResults/postgres-foundation.txt
+      - name: Verify foundation gate disposition
+        run: |
+          set -o pipefail
+          pnpm verify:foundation-gate | tee TestResults/foundation-gate.txt
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-evidence
+          path: TestResults/
+          if-no-files-found: error
+          retention-days: 14
+
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [csharp, javascript-typescript]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@24c7eb380a2dc368f2d129e4c65e51d172983a1e # v4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended
+      - uses: github/codeql-action/autobuild@24c7eb380a2dc368f2d129e4c65e51d172983a1e # v4
+      - uses: github/codeql-action/analyze@24c7eb380a2dc368f2d129e4c65e51d172983a1e # v4
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: moderate
+          deny-licenses: AGPL-1.0-or-later, AGPL-3.0-or-later
+
+  supply-chain:
+    name: Secrets, vulnerabilities, and SBOM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan repository for secrets
+        run: node eng/scan-secrets.mjs
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: corepack enable && corepack prepare pnpm@10.27.0 --activate
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - name: Audit locked dependencies
+        run: |
+          mkdir -p artifacts
+          pnpm install --frozen-lockfile
+          pnpm audit --audit-level moderate
+          dotnet restore MAKH.Trading.slnx --locked-mode
+          dotnet list MAKH.Trading.slnx package --vulnerable --include-transitive | tee artifacts/dotnet-vulnerabilities.txt
+          ! grep -q "has the following vulnerable packages" artifacts/dotnet-vulnerabilities.txt
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: artifacts/makh-sbom.cdx.json
+          upload-artifact: false
+      - name: Upload SBOM
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: makh-sbom
+          path: artifacts/makh-sbom.cdx.json
+          if-no-files-found: error
+          retention-days: 30

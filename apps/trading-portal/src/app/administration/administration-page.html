@@ -1,0 +1,112 @@
+<section class="admin" aria-labelledby="admin-title">
+  <div class="title-row">
+    <div>
+      <p class="eyebrow">Governed operations · synthetic snapshot</p>
+      <h1 id="admin-title">Administration</h1>
+      <p class="lede">
+        Inspect access, configuration and audit evidence from one controlled workspace.
+      </p>
+    </div>
+    <span class="read-only">Read-only</span>
+  </div>
+  <aside class="boundary" role="alert">
+    <strong>Privileged changes are disabled</strong
+    ><span
+      >Identity, fresh MFA, elevation approval, persistence and production configuration are not
+      connected.</span
+    >
+  </aside>
+
+  <div class="summary-grid" aria-label="Administration status">
+    <article>
+      <span>Privileged roles</span><strong>{{ admin.access.length }}</strong
+      ><small>Separated scopes</small>
+    </article>
+    <article>
+      <span>Assigned users</span><strong>5</strong><small>Synthetic identities</small>
+    </article>
+    <article>
+      <span>Configurations</span><strong>{{ admin.configurations.length }}</strong
+      ><small>2 require attention</small>
+    </article>
+    <article>
+      <span>Recent denials</span><strong class="warning">1</strong><small>Fail-closed</small>
+    </article>
+  </div>
+
+  <article class="panel" aria-labelledby="access-title">
+    <div class="panel-heading">
+      <div>
+        <p class="kicker">Least privilege</p>
+        <h2 id="access-title">Access review coverage</h2>
+      </div>
+      <span class="snapshot">Directory unavailable</span>
+    </div>
+    <div class="roles">
+      @for (role of admin.access; track role.role) {
+        <section>
+          <div class="role-head">
+            <div>
+              <strong>{{ role.role }}</strong
+              ><span>{{ role.scope }}</span>
+            </div>
+            <span class="review" [attr.data-review]="role.review">{{ role.review }}</span>
+          </div>
+          <div class="coverage"><span [style.width.%]="role.coverage"></span></div>
+          <footer>
+            <span>{{ role.users }} assigned</span
+            ><strong>{{ role.coverage }}% evidence coverage</strong>
+          </footer>
+        </section>
+      }
+    </div>
+  </article>
+
+  <div class="operations-grid">
+    <article class="panel" aria-labelledby="config-title">
+      <p class="kicker">Safe references only</p>
+      <h2 id="config-title">Configuration registry</h2>
+      <ul class="configs">
+        @for (config of admin.configurations; track config.name) {
+          <li [attr.data-state]="config.state">
+            <div>
+              <strong>{{ config.name }}</strong
+              ><span>{{ config.detail }}</span>
+            </div>
+            <div>
+              <span class="state">{{ config.state }}</span
+              ><small>{{ config.version }}</small>
+            </div>
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="panel" aria-labelledby="audit-title">
+      <div class="panel-heading">
+        <div>
+          <p class="kicker">Tamper-evident sequence</p>
+          <h2 id="audit-title">Recent audit</h2>
+        </div>
+        <span class="snapshot">{{ admin.generatedAt | date: 'shortTime' : 'UTC' }} UTC</span>
+      </div>
+      <ol class="audit">
+        @for (event of admin.audit; track event.sequence) {
+          <li [attr.data-result]="event.result">
+            <span class="sequence">#{{ event.sequence }}</span>
+            <div>
+              <strong>{{ event.action }}</strong
+              ><span>{{ event.reason }}</span
+              ><small>{{ event.actor }} · {{ event.at | date: 'shortTime' : 'UTC' }} UTC</small>
+            </div>
+            <span class="result">{{ event.result }}</span>
+          </li>
+        }
+      </ol>
+    </article>
+  </div>
+  <p class="snapshot-id">
+    Snapshot {{ admin.snapshotId }} · No credentials, mutations, identity authority or trading
+    authority
+  </p>
+</section>

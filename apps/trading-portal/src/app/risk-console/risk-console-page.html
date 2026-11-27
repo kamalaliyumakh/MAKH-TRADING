@@ -1,0 +1,133 @@
+<section class="risk-console" aria-labelledby="risk-console-title">
+  <header class="heading">
+    <div>
+      <p class="eyebrow">Paper risk oversight</p>
+      <h1 id="risk-console-title">Risk console</h1>
+      <p>Policy {{ risk.policyVersion() }} · As of {{ risk.asOf() }}</p>
+    </div>
+    <span class="locked">ENTRY BLOCKED</span>
+  </header>
+  <aside class="alert" role="alert">
+    <strong>Risk state is fail-closed</strong
+    ><span
+      >Reconciliation mismatch and unavailable authority prevent new entries and all administrative
+      changes.</span
+    >
+  </aside>
+  @if (risk.loading()) {
+    <p class="note" role="status">Loading authenticated risk evidence…</p>
+  }
+  @if (risk.loadError(); as error) {
+    <p class="note" role="alert">{{ error }}</p>
+  }
+  <section class="card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Policy capacity</p>
+        <h2>Limits and remaining capacity</h2>
+      </div>
+      <span>Synthetic · read-only</span>
+    </div>
+    <div class="limits">
+      @for (limit of risk.limits(); track limit.code) {
+        <article>
+          <strong>{{ limit.label }}</strong
+          ><progress [value]="limit.used" [max]="limit.limit"></progress
+          ><span>
+            @if (limit.unit === 'USD') {
+              {{ limit.used | currency: 'USD' : 'symbol' : '1.0-0' }} of
+              {{ limit.limit | currency: 'USD' : 'symbol' : '1.0-0' }}
+            } @else {
+              {{ limit.used | number }} of {{ limit.limit | number }} {{ limit.unit }}
+            }
+          </span>
+        </article>
+      }
+    </div>
+    <p class="note">
+      Capacity is informational. Server-side policy evaluation remains mandatory for every proposal.
+    </p>
+  </section>
+  <div class="grid">
+    <section class="card">
+      <p class="eyebrow">Containment state</p>
+      <h2>Active pauses</h2>
+      <ul>
+        @for (pause of risk.pauses(); track pause) {
+          <li>{{ pause }}</li>
+        }
+      </ul>
+      <button disabled>Pause controls unavailable</button>
+    </section>
+    <section class="card">
+      <p class="eyebrow">Immutable evidence</p>
+      <h2>Open breaches</h2>
+      <div class="breaches">
+        @for (breach of risk.breaches(); track breach.id) {
+          <article>
+            <span class="severity">{{ breach.severity }}</span
+            ><strong>{{ breach.id }} · {{ breach.rule }}</strong
+            ><span>{{ breach.state }}</span
+            ><small>{{ breach.detectedAt }}</small>
+          </article>
+        }
+      </div>
+    </section>
+  </div>
+  <section class="card containment">
+    <p class="eyebrow">Separated consequential actions</p>
+    <h2>Kill-switch workflow</h2>
+    <p>
+      Block, Cancel and Liquidate are deliberately separate. Each requires authorization, fresh MFA,
+      reason, idempotency, audit evidence and reconciliation.
+    </p>
+    <div class="actions">
+      <button type="button" (click)="review('Block')">Review Block</button
+      ><button type="button" (click)="review('Cancel')">Review Cancel</button
+      ><button type="button" (click)="review('Liquidate')">Review Liquidate</button>
+    </div>
+    @if (selectedAction(); as action) {
+      <aside class="confirmation" aria-live="polite">
+        <strong>{{ action }} confirmation preview</strong
+        ><span>No action has run. Preview requires Risk Administrator access and fresh MFA.</span>
+        <label for="containment-reason">Reason</label>
+        <textarea
+          id="containment-reason"
+          rows="3"
+          maxlength="500"
+          [value]="reason()"
+          (input)="reason.set($any($event.target).value)"
+        ></textarea>
+        <button
+          type="button"
+          [disabled]="reason().trim().length < 10 || risk.previewLoading()"
+          (click)="requestPreview(action)"
+        >
+          {{ risk.previewLoading() ? 'Requesting preview…' : 'Generate impact preview' }}
+        </button>
+        @if (risk.previewError(); as error) {
+          <span role="alert">{{ error }}</span>
+        }
+        @if (risk.containmentPreview(); as preview) {
+          <section class="impact" aria-label="Containment impact preview">
+            <strong>Synthetic impact · {{ preview.impact.source }}</strong>
+            <span>{{ preview.impact.openOrdersAffected }} open orders affected</span>
+            <span>{{ preview.impact.positionsAffected }} positions affected</span>
+            <span
+              >Estimated gross notional:
+              {{ preview.impact.estimatedGrossNotional | currency: preview.impact.currency }}</span
+            >
+            <ul>
+              @for (warning of preview.impact.warnings; track warning) {
+                <li>{{ warning }}</li>
+              }
+            </ul>
+            <small>Evidence {{ preview.evidenceSha256 }}</small>
+          </section>
+        }
+        <button disabled>Confirm {{ action }} unavailable</button
+        ><button class="secondary" type="button" (click)="clear()">Close preview</button>
+      </aside>
+    }
+  </section>
+</section>

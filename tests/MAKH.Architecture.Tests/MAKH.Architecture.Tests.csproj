@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/MAKH.Api/MAKH.Api.csproj" />
+    <ProjectReference Include="../../src/MAKH.Application/MAKH.Application.csproj" />
+    <ProjectReference Include="../../src/MAKH.Domain/MAKH.Domain.csproj" />
+    <ProjectReference Include="../../src/MAKH.Infrastructure/MAKH.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/MAKH.Migrations/MAKH.Migrations.csproj" />
+    <ProjectReference Include="../../src/MAKH.Worker/MAKH.Worker.csproj" />
+  </ItemGroup>
+</Project>

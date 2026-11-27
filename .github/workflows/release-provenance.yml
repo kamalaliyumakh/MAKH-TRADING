@@ -1,0 +1,59 @@
+name: Release provenance
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  attest:
+    name: Package, inventory, and keyless-sign
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+      - run: corepack enable && corepack prepare pnpm@10.27.0 --activate
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - name: Build immutable release bundle
+        run: |
+          pnpm install --frozen-lockfile
+          dotnet restore MAKH.Trading.slnx --locked-mode
+          dotnet publish src/MAKH.Api/MAKH.Api.csproj --no-restore --configuration Release --output artifacts/api
+          dotnet publish src/MAKH.Worker/MAKH.Worker.csproj --no-restore --configuration Release --output artifacts/worker
+          pnpm build:angular
+          tar --create --gzip --file artifacts/makh-${GITHUB_REF_NAME}.tar.gz artifacts/api artifacts/worker dist
+      - name: Generate release SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        with:
+          path: artifacts
+          format: cyclonedx-json
+          output-file: artifacts/makh-${{ github.ref_name }}.cdx.json
+          upload-artifact: false
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Sign bundle and SBOM with GitHub OIDC
+        env:
+          COSIGN_YES: 'true'
+        run: |
+          cosign sign-blob artifacts/makh-${GITHUB_REF_NAME}.tar.gz --bundle artifacts/makh-${GITHUB_REF_NAME}.tar.gz.sigstore.json
+          cosign sign-blob artifacts/makh-${GITHUB_REF_NAME}.cdx.json --bundle artifacts/makh-${GITHUB_REF_NAME}.cdx.json.sigstore.json
+          sha256sum artifacts/makh-${GITHUB_REF_NAME}.tar.gz artifacts/makh-${GITHUB_REF_NAME}.cdx.json > artifacts/SHA256SUMS
+      - name: Upload signed evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: signed-release-evidence-${{ github.ref_name }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 90

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MAKH.Application/MAKH.Application.csproj" />
+    <ProjectReference Include="../MAKH.Infrastructure/MAKH.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

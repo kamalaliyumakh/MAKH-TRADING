@@ -1,0 +1,224 @@
+.journal {
+  display: grid;
+  gap: var(--makh-space-5);
+}
+.journal::before {
+  position: fixed;
+  inset: 4.75rem 0 auto;
+  height: 18rem;
+  z-index: -1;
+  background: linear-gradient(180deg, #edf5fa, transparent);
+  content: '';
+}
+.title-row,
+.panel-heading,
+.entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1rem;
+}
+.eyebrow,
+.kicker {
+  margin: 0 0 0.5rem;
+  color: var(--makh-color-brand-blue);
+  font-size: var(--makh-text-sm);
+  font-weight: 700;
+}
+h1 {
+  margin: 0;
+  color: var(--makh-color-brand-navy);
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.035em;
+}
+h2 {
+  margin: 0;
+}
+.lede,
+.review-progress p,
+.entry p,
+.snapshot,
+.snapshot-id {
+  color: var(--makh-color-neutral-700);
+  line-height: 1.5;
+}
+.read-only,
+.state {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid #91a4b7;
+  border-radius: 999px;
+  background: #f4f7fa;
+  color: #243b53;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+.boundary {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem;
+  color: #7a271a;
+  border: 1px solid #c2410c;
+  border-radius: 0.75rem;
+  background: #fff1ed;
+}
+.load-state {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  border: 1px solid #91a4b7;
+  border-radius: 0.75rem;
+  background: #f4f7fa;
+  color: var(--makh-color-brand-navy);
+}
+.load-state[role='alert'] {
+  border-color: #c2410c;
+  background: #fff1ed;
+  color: #7a271a;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+.summary-grid article,
+.panel {
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--makh-color-neutral-100);
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: var(--makh-shadow-sm);
+}
+.summary-grid article {
+  display: grid;
+  gap: 0.35rem;
+}
+.summary-grid span,
+.summary-grid small {
+  color: var(--makh-color-neutral-700);
+}
+.summary-grid strong {
+  color: var(--makh-color-brand-navy);
+  font-size: 1.8rem;
+}
+.review-progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 2rem;
+  background: linear-gradient(135deg, #fff, #f2f8f7);
+}
+.review-progress p {
+  max-width: 44rem;
+  margin-bottom: 0;
+}
+.ring {
+  display: grid;
+  width: 7rem;
+  height: 7rem;
+  place-content: center;
+  text-align: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #fff 57%, transparent 59%),
+    conic-gradient(#16876a var(--progress), #dce6e7 0);
+}
+.ring strong {
+  color: #075a43;
+  font-size: 1.35rem;
+}
+.ring span {
+  color: var(--makh-color-neutral-700);
+  font-size: 0.72rem;
+}
+.entries {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.entry {
+  padding: 1rem;
+  border: 1px solid #dce5ed;
+  border-left: 0.25rem solid #16876a;
+  border-radius: 0.7rem;
+  background: #fff;
+}
+.entry[data-state='Draft'] {
+  border-left-color: #b7791f;
+}
+.entry[data-state='Archived'] {
+  border-left-color: #71849a;
+}
+.entry-head div {
+  display: grid;
+  gap: 0.2rem;
+}
+.entry-head div strong {
+  font-size: 1.25rem;
+}
+.entry-head div span,
+footer {
+  color: var(--makh-color-neutral-700);
+  font-size: 0.78rem;
+}
+.outcome {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--makh-color-neutral-100);
+}
+.result-bar {
+  grid-column: 1/-1;
+  height: 0.35rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5ebf0;
+}
+.result-bar span {
+  display: block;
+  height: 100%;
+  background: #16876a;
+}
+.result-bar[data-sign='negative'] span {
+  background: #c2410c;
+}
+[data-sign='positive'] {
+  color: #075a43;
+}
+[data-sign='negative'] {
+  color: #9b2c2c;
+}
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.snapshot-id {
+  margin: 0;
+  font-size: 0.75rem;
+}
+@media (max-width: 800px) {
+  .summary-grid,
+  .entries {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .title-row,
+  .panel-heading,
+  .review-progress {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+  .summary-grid,
+  .entries {
+    grid-template-columns: 1fr;
+  }
+  .ring {
+    width: 6rem;
+    height: 6rem;
+  }
+}

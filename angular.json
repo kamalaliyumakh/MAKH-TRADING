@@ -1,0 +1,280 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "pnpm"
+  },
+  "newProjectRoot": "libs",
+  "projects": {
+    "web-public": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "apps/web-public",
+      "sourceRoot": "apps/web-public/src",
+      "prefix": "makh",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "apps/web-public/src/main.ts",
+            "tsConfig": "apps/web-public/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/web-public/public"
+              }
+            ],
+            "styles": ["apps/web-public/src/styles.scss"],
+            "server": "apps/web-public/src/main.server.ts",
+            "outputMode": "server",
+            "security": {
+              "allowedHosts": []
+            },
+            "ssr": {
+              "entry": "apps/web-public/src/server.ts"
+            }
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "web-public:build:production"
+            },
+            "development": {
+              "buildTarget": "web-public:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
+        }
+      }
+    },
+    "trading-portal": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "apps/trading-portal",
+      "sourceRoot": "apps/trading-portal/src",
+      "prefix": "makh",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "apps/trading-portal/src/main.ts",
+            "tsConfig": "apps/trading-portal/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/trading-portal/public"
+              }
+            ],
+            "styles": ["apps/trading-portal/src/styles.scss"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "trading-portal:build:production"
+            },
+            "development": {
+              "buildTarget": "trading-portal:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
+        }
+      }
+    },
+    "ui": {
+      "projectType": "library",
+      "root": "libs/ui",
+      "sourceRoot": "libs/ui/src",
+      "prefix": "makh",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/ui/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "libs/ui/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "libs/ui/tsconfig.spec.json"
+          }
+        }
+      }
+    },
+    "auth": {
+      "projectType": "library",
+      "root": "libs/auth",
+      "sourceRoot": "libs/auth/src",
+      "prefix": "makh",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/auth/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "libs/auth/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "libs/auth/tsconfig.spec.json"
+          }
+        }
+      }
+    },
+    "api-client": {
+      "projectType": "library",
+      "root": "libs/api-client",
+      "sourceRoot": "libs/api-client/src",
+      "prefix": "makh",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/api-client/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "libs/api-client/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "libs/api-client/tsconfig.spec.json"
+          }
+        }
+      }
+    },
+    "realtime": {
+      "projectType": "library",
+      "root": "libs/realtime",
+      "sourceRoot": "libs/realtime/src",
+      "prefix": "makh",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/realtime/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "libs/realtime/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "libs/realtime/tsconfig.spec.json"
+          }
+        }
+      }
+    },
+    "shared": {
+      "projectType": "library",
+      "root": "libs/shared",
+      "sourceRoot": "libs/shared/src",
+      "prefix": "makh",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/shared/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "libs/shared/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "libs/shared/tsconfig.spec.json"
+          }
+        }
+      }
+    }
+  }
+}

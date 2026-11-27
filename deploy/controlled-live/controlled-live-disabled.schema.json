@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://makh.local/schemas/controlled-live-disabled.schema.json",
+  "title": "MAKH controlled-live disabled configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode", "entryLocked", "authorization", "references", "limits", "assurance"],
+  "properties": {
+    "mode": { "const": "controlled-live-disabled" },
+    "entryLocked": { "const": true },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["liveEnabled", "gateReference", "expiresAt"],
+      "properties": {
+        "liveEnabled": { "const": false },
+        "gateReference": { "const": "PENDING" },
+        "expiresAt": { "const": "PENDING" }
+      }
+    },
+    "references": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["brokerAccount", "brokerCredential", "identityProvider", "database", "telemetry"],
+      "properties": {
+        "brokerAccount": { "const": "PENDING-NON-SECRET-REFERENCE" },
+        "brokerCredential": { "const": "PENDING-VAULT-REFERENCE" },
+        "identityProvider": { "const": "PENDING-NON-SECRET-REFERENCE" },
+        "database": { "const": "PENDING-NON-SECRET-REFERENCE" },
+        "telemetry": { "const": "PENDING-NON-SECRET-REFERENCE" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policyVersion", "pilotCapital", "dailyLoss", "positionExposure", "orderNotional", "shareQuantity", "openPositions", "ordersPerDay"],
+      "properties": {
+        "policyVersion": { "const": "PENDING" },
+        "pilotCapital": { "type": "null" },
+        "dailyLoss": { "type": "null" },
+        "positionExposure": { "type": "null" },
+        "orderNotional": { "type": "null" },
+        "shareQuantity": { "type": "null" },
+        "openPositions": { "type": "null" },
+        "ordersPerDay": { "type": "null" }
+      }
+    },
+    "assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["securityTest", "complianceApproval", "operationalReadiness", "goNoGo", "killSwitchDrill", "reconciliationDrill", "rollbackDrill"],
+      "properties": {
+        "securityTest": { "const": "NOT-EXECUTED" },
+        "complianceApproval": { "const": "NOT-APPROVED" },
+        "operationalReadiness": { "const": "REJECTED-DEFERRED" },
+        "goNoGo": { "const": "NOT-APPROVED" },
+        "killSwitchDrill": { "const": "NOT-EXECUTED" },
+        "reconciliationDrill": { "const": "NOT-EXECUTED" },
+        "rollbackDrill": { "const": "NOT-EXECUTED" }
+      }
+    }
+  }
+}

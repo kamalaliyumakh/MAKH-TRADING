@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <NoWarn>$(NoWarn);CA1861</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MAKH.Infrastructure/MAKH.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../deploy/postgres/roles.sql" Link="roles.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

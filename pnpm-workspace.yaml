@@ -1,0 +1,13 @@
+packages:
+  - 'apps/*'
+  - 'libs/*'
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild
+  - lmdb
+  - msgpackr-extract
+strictPeerDependencies: false
+
+overrides:
+  '@modelcontextprotocol/sdk>@hono/node-server': 2.0.10

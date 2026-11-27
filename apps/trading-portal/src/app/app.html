@@ -1,0 +1,35 @@
+@if (!authRoute()) {
+  <a class="skip-link" href="#portal-content" (click)="skipToContent($event)"
+    >Skip to portal content</a
+  >
+  <header class="portal-header">
+    <a class="brand" href="/app" aria-label="MAKH Trading dashboard"
+      ><span class="brand-logo"
+        ><span class="brand-emblem"><img src="/makh-trading-logo.png" alt="" /></span
+        ><span class="brand-name"><strong>MAKH</strong><small>TRADING</small></span></span
+      ></a
+    >
+    <nav aria-label="Portal">
+      <a href="/app"><span aria-hidden="true">◫</span> Dashboard</a
+      ><a href="/app/scanner"><span aria-hidden="true">⌁</span> Scanner</a
+      ><a href="/app/trading"><span aria-hidden="true">⇄</span> Paper trading</a
+      ><a href="/app/risk"><span aria-hidden="true">◇</span> Risk</a>
+      <a href="/app/journal"><span aria-hidden="true">▤</span> Journal</a>
+      <a href="/app/reports"><span aria-hidden="true">⌗</span> Reports</a>
+      <a href="/app/admin"><span aria-hidden="true">⚙</span> Admin</a>
+    </nav>
+    <div class="header-state">
+      <span class="status-dot"></span><strong class="mode">Paper mode · Foundation only</strong>
+      <button type="button" class="logout" (click)="logout()">Sign out</button>
+    </div>
+  </header>
+  <main id="portal-content" class="shell" tabindex="-1">
+    <makh-foundation-status
+      label="Entry locked"
+      detail="Synthetic portal evidence only. Identity, broker connectivity, risk authority, order submission, and live mode are not configured."
+    />
+    <router-outlet />
+  </main>
+} @else {
+  <router-outlet />
+}

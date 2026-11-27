@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MAKH.Api/MAKH.Api.csproj" />
+    <Project Path="src/MAKH.Application/MAKH.Application.csproj" />
+    <Project Path="src/MAKH.Domain/MAKH.Domain.csproj" />
+    <Project Path="src/MAKH.Infrastructure/MAKH.Infrastructure.csproj" />
+    <Project Path="src/MAKH.Migrations/MAKH.Migrations.csproj" />
+    <Project Path="src/MAKH.Worker/MAKH.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MAKH.Api.SecurityTests/MAKH.Api.SecurityTests.csproj" />
+    <Project Path="tests/MAKH.Architecture.Tests/MAKH.Architecture.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "scope": "WBS 7.9 Paper-Trading Certification Gate",
+  "decision": "RejectDefer",
+  "gateAccepted": false,
+  "paperCertificationCreated": false,
+  "controlledLivePreparationAuthorized": false,
+  "liveTradingAuthorityCreated": false,
+  "criteria": [
+    { "id": "PTG-01", "status": "LocalPass" },
+    { "id": "PTG-02", "status": "LocalPass" },
+    { "id": "PTG-03", "status": "LocalPass" },
+    { "id": "PTG-04", "status": "LocalPass" },
+    { "id": "PTG-05", "status": "LocalPass" },
+    { "id": "PTG-06", "status": "LocalPass" },
+    { "id": "PTG-07", "status": "LocalPass" },
+    { "id": "PTG-08", "status": "Fail" },
+    { "id": "PTG-09", "status": "Fail" },
+    { "id": "PTG-10", "status": "Fail" },
+    { "id": "PTG-11", "status": "Fail" },
+    { "id": "PTG-12", "status": "Fail" },
+    { "id": "PTG-13", "status": "Fail" },
+    { "id": "PTG-14", "status": "Pending" }
+  ],
+  "blockers": [
+    { "id": "PTGB-01", "severity": "Critical", "status": "Open" },
+    { "id": "PTGB-02", "severity": "Critical", "status": "Open" },
+    { "id": "PTGB-03", "severity": "Critical", "status": "Open" },
+    { "id": "PTGB-04", "severity": "Critical", "status": "Open" },
+    { "id": "PTGB-05", "severity": "Critical", "status": "Open" },
+    { "id": "PTGB-06", "severity": "High", "status": "Open" },
+    { "id": "PTGB-07", "severity": "High", "status": "Open" },
+    { "id": "PTGB-08", "severity": "Critical", "status": "Open" }
+  ],
+  "decisions": [
+    { "id": "PTGD-01", "status": "Pending", "evidence": null },
+    { "id": "PTGD-02", "status": "Pending", "evidence": null },
+    { "id": "PTGD-03", "status": "Pending", "evidence": null },
+    { "id": "PTGD-04", "status": "Pending", "evidence": null },
+    { "id": "PTGD-05", "status": "Pending", "evidence": null },
+    { "id": "PTGD-06", "status": "Pending", "evidence": null },
+    { "id": "PTGD-07", "status": "Pending", "evidence": null },
+    { "id": "PTGD-08", "status": "Pending", "evidence": null }
+  ]
+}

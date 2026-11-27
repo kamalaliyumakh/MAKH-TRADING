@@ -1,0 +1,76 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve",
+    "paths": {
+      "@makh/api-client": ["./libs/api-client/src/public-api.ts"],
+      "@makh/auth": ["./libs/auth/src/public-api.ts"],
+      "@makh/realtime": ["./libs/realtime/src/public-api.ts"],
+      "@makh/shared": ["./libs/shared/src/public-api.ts"],
+      "@makh/ui": ["./libs/ui/src/public-api.ts"]
+    }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/web-public/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/web-public/tsconfig.spec.json"
+    },
+    {
+      "path": "./apps/trading-portal/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/trading-portal/tsconfig.spec.json"
+    },
+    {
+      "path": "./libs/ui/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/ui/tsconfig.spec.json"
+    },
+    {
+      "path": "./libs/auth/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/auth/tsconfig.spec.json"
+    },
+    {
+      "path": "./libs/api-client/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/api-client/tsconfig.spec.json"
+    },
+    {
+      "path": "./libs/realtime/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/realtime/tsconfig.spec.json"
+    },
+    {
+      "path": "./libs/shared/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/shared/tsconfig.spec.json"
+    }
+  ]
+}

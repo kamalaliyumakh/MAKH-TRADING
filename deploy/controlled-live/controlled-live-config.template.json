@@ -1,0 +1,35 @@
+{
+  "mode": "controlled-live-disabled",
+  "entryLocked": true,
+  "authorization": {
+    "liveEnabled": false,
+    "gateReference": "PENDING",
+    "expiresAt": "PENDING"
+  },
+  "references": {
+    "brokerAccount": "PENDING-NON-SECRET-REFERENCE",
+    "brokerCredential": "PENDING-VAULT-REFERENCE",
+    "identityProvider": "PENDING-NON-SECRET-REFERENCE",
+    "database": "PENDING-NON-SECRET-REFERENCE",
+    "telemetry": "PENDING-NON-SECRET-REFERENCE"
+  },
+  "limits": {
+    "policyVersion": "PENDING",
+    "pilotCapital": null,
+    "dailyLoss": null,
+    "positionExposure": null,
+    "orderNotional": null,
+    "shareQuantity": null,
+    "openPositions": null,
+    "ordersPerDay": null
+  },
+  "assurance": {
+    "securityTest": "NOT-EXECUTED",
+    "complianceApproval": "NOT-APPROVED",
+    "operationalReadiness": "REJECTED-DEFERRED",
+    "goNoGo": "NOT-APPROVED",
+    "killSwitchDrill": "NOT-EXECUTED",
+    "reconciliationDrill": "NOT-EXECUTED",
+    "rollbackDrill": "NOT-EXECUTED"
+  }
+}

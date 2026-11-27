@@ -1,0 +1,117 @@
+<section class="journal" aria-labelledby="journal-title">
+  <div class="title-row">
+    <div>
+      <p class="eyebrow">Process review · synthetic records</p>
+      <h1 id="journal-title">Trading journal</h1>
+      <p class="lede">Review decisions, evidence and discipline—not just outcomes.</p>
+    </div>
+    <span class="read-only">Read-only</span>
+  </div>
+
+  <aside class="boundary" role="note">
+    <strong>Journal entry is disabled</strong>
+    <span
+      >Writes, persistence, privacy controls and authoritative reference validation are not
+      connected.</span
+    >
+  </aside>
+
+  @if (state() !== 'Ready') {
+    <section class="load-state" [attr.role]="state() === 'Loading' ? 'status' : 'alert'">
+      <strong>{{
+        state() === 'Loading' ? 'Loading journal' : 'Journal records unavailable'
+      }}</strong>
+      <span>{{ message() }}</span>
+    </section>
+  }
+
+  @if (snapshot(); as journal) {
+    <div class="summary-grid" role="group" aria-label="Synthetic journal summary">
+      <article>
+        <span>Total records</span><strong>{{ summary().total }}</strong
+        ><small>Current fixture</small>
+      </article>
+      <article>
+        <span>Outcome reviewed</span><strong>{{ summary().reviewRate | number: '1.0-0' }}%</strong
+        ><small>{{ summary().reviewed }} of {{ summary().total }}</small>
+      </article>
+      <article>
+        <span>Positive outcomes</span><strong>{{ summary().winRate | number: '1.0-0' }}%</strong
+        ><small>Not predictive</small>
+      </article>
+      <article>
+        <span>Average result</span
+        ><strong [attr.data-sign]="summary().average < 0 ? 'negative' : 'positive'"
+          >{{ summary().average | number: '1.1-1' }}%</strong
+        ><small>Synthetic only</small>
+      </article>
+    </div>
+
+    <article class="panel review-progress" aria-labelledby="review-title">
+      <div>
+        <p class="kicker">Review completion</p>
+        <h2 id="review-title">Outcome discipline</h2>
+        <p>
+          Unreviewed records remain visible so incomplete learning is not hidden by performance
+          totals.
+        </p>
+      </div>
+      <div
+        class="ring"
+        [style.--progress]="summary().reviewRate + '%'"
+        role="img"
+        [attr.aria-label]="
+          (summary().reviewRate | number: '1.0-0') + ' percent of records have outcome reviews'
+        "
+      >
+        <strong>{{ summary().reviewRate | number: '1.0-0' }}%</strong><span>reviewed</span>
+      </div>
+    </article>
+
+    <article class="panel" aria-labelledby="entries-title">
+      <div class="panel-heading">
+        <div>
+          <p class="kicker">Decision history</p>
+          <h2 id="entries-title">Recent records</h2>
+        </div>
+        <span class="snapshot">As of {{ journal.asOf | date: 'medium' : 'UTC' }} UTC</span>
+      </div>
+      <div class="entries">
+        @for (entry of journal.entries; track entry.entryId) {
+          <article class="entry" [attr.data-state]="entry.state">
+            <div class="entry-head">
+              <div>
+                <strong>{{ entry.symbol }}</strong
+                ><span>{{ entry.side }} · {{ entry.openedAt | date: 'mediumDate' : 'UTC' }}</span>
+              </div>
+              <span class="state">{{ entry.state }}</span>
+            </div>
+            <p>{{ entry.thesis }}</p>
+            <div class="outcome">
+              <span>{{ entry.outcome }}</span>
+              @if (entry.resultPercent !== null) {
+                <strong [attr.data-sign]="entry.resultPercent < 0 ? 'negative' : 'positive'"
+                  >{{ entry.resultPercent | number: '1.1-1' }}%</strong
+                >
+                <span
+                  class="result-bar"
+                  [attr.data-sign]="entry.resultPercent < 0 ? 'negative' : 'positive'"
+                  ><span [style.width.%]="resultWidth(entry.resultPercent)"></span
+                ></span>
+              } @else {
+                <strong>Pending</strong>
+              }
+            </div>
+            <footer>
+              <span>{{ entry.evidenceCount }} evidence links</span
+              ><span>{{ entry.tags.join(' · ') }}</span>
+            </footer>
+          </article>
+        }
+      </div>
+    </article>
+    <p class="snapshot-id">
+      Snapshot {{ journal.snapshotId }} · Synthetic, non-authoritative and non-executable
+    </p>
+  }
+</section>

@@ -1,0 +1,742 @@
+openapi: 3.1.0
+info:
+  title: MAKH Trading Platform API
+  version: 1.0.0-design
+  description: Risk-controlled self-directed trading API design baseline. HTTP success never guarantees broker execution or price.
+servers:
+  - url: /api/v1
+security:
+  - bffCookie: []
+tags:
+  - name: Session
+  - name: Market
+  - name: Scanner
+  - name: Evidence
+  - name: Watchlists
+  - name: Orders
+  - name: Positions
+  - name: Risk
+  - name: Audit
+paths:
+  /session:
+    get:
+      operationId: getSession
+      tags: [Session]
+      summary: Return normalized session and entitlement context
+      responses:
+        '200':
+          {
+            description: Session context,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/SessionContext' } } },
+          }
+        '401': { $ref: '#/components/responses/Problem' }
+  /market/status:
+    get:
+      operationId: getMarketStatus
+      tags: [Market]
+      responses:
+        '200':
+          {
+            description: Market and provider health snapshot,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/MarketStatus' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /securities/{securityId}:
+    get:
+      operationId: getSecurity
+      tags: [Market]
+      parameters:
+        - { $ref: '#/components/parameters/SecurityId' }
+      responses:
+        '200':
+          {
+            description: Security snapshot,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/SecuritySnapshot' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /scanner/candidates:
+    get:
+      operationId: listScannerCandidates
+      tags: [Scanner]
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          {
+            description: Authorized scanner snapshot,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/CandidatePage' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /scanner/snapshot:
+    get:
+      operationId: getLatestScannerSnapshot
+      tags: [Scanner]
+      responses:
+        '200':
+          {
+            description: Latest sequenced scanner run for the authenticated account,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/ScannerRunSnapshot' } } },
+          }
+        '404': { description: No sequenced scanner snapshot exists for the authenticated account }
+        default: { $ref: '#/components/responses/Problem' }
+  /securities/{securityId}/evidence:
+    get:
+      operationId: listSecurityEvidence
+      tags: [Evidence]
+      parameters:
+        - { $ref: '#/components/parameters/SecurityId' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          {
+            description: Evidence page,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/EvidencePage' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /watchlists/{watchlistId}/items/{securityId}:
+    put:
+      operationId: putWatchlistItem
+      tags: [Watchlists]
+      parameters:
+        - { $ref: '#/components/parameters/WatchlistId' }
+        - { $ref: '#/components/parameters/SecurityId' }
+        - { $ref: '#/components/parameters/AntiForgery' }
+      responses:
+        '200':
+          {
+            description: Watchlist item,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/WatchlistItem' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+    delete:
+      operationId: deleteWatchlistItem
+      tags: [Watchlists]
+      parameters:
+        - { $ref: '#/components/parameters/WatchlistId' }
+        - { $ref: '#/components/parameters/SecurityId' }
+        - { $ref: '#/components/parameters/AntiForgery' }
+      responses:
+        '204': { description: Item removed }
+        default: { $ref: '#/components/responses/Problem' }
+  /orders/proposals:
+    post:
+      operationId: createOrderProposal
+      tags: [Orders]
+      parameters:
+        - { $ref: '#/components/parameters/AntiForgery' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          {
+            application/json:
+              { schema: { $ref: '#/components/schemas/CreateOrderProposalRequest' } },
+          }
+      responses:
+        '201':
+          {
+            description: Risk-evaluated proposal,
+            headers: { Location: { schema: { type: string } } },
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/OrderProposal' } } },
+          }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+        default: { $ref: '#/components/responses/Problem' }
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [Orders]
+      parameters:
+        - { $ref: '#/components/parameters/AccountId' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          {
+            description: Order snapshot page,
+            content: { application/json: { schema: { $ref: '#/components/schemas/OrderPage' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+    post:
+      operationId: submitOrder
+      tags: [Orders]
+      parameters:
+        - { $ref: '#/components/parameters/AntiForgery' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          { application/json: { schema: { $ref: '#/components/schemas/SubmitOrderRequest' } } }
+      responses:
+        '202':
+          {
+            description: Submission accepted for broker processing,
+            content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } },
+          }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+        '503': { $ref: '#/components/responses/Problem' }
+        default: { $ref: '#/components/responses/Problem' }
+  /orders/{orderId}:
+    get:
+      operationId: getOrder
+      tags: [Orders]
+      parameters:
+        - { $ref: '#/components/parameters/OrderId' }
+      responses:
+        '200':
+          {
+            description: Canonical order snapshot,
+            headers: { ETag: { schema: { type: string } } },
+            content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /orders/{orderId}/cancel:
+    post:
+      operationId: cancelOrder
+      tags: [Orders]
+      parameters:
+        - { $ref: '#/components/parameters/OrderId' }
+        - { $ref: '#/components/parameters/AntiForgery' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { $ref: '#/components/parameters/IfMatch' }
+      responses:
+        '202':
+          {
+            description: Cancellation requested; fills may still occur,
+            content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /orders/{orderId}/replace:
+    post:
+      operationId: replaceOrder
+      tags: [Orders]
+      parameters:
+        - { $ref: '#/components/parameters/OrderId' }
+        - { $ref: '#/components/parameters/AntiForgery' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          { application/json: { schema: { $ref: '#/components/schemas/ReplaceOrderRequest' } } }
+      responses:
+        '202':
+          {
+            description: Replacement requested,
+            content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /positions:
+    get:
+      operationId: listPositions
+      tags: [Positions]
+      parameters:
+        - { $ref: '#/components/parameters/AccountId' }
+      responses:
+        '200':
+          {
+            description: Position snapshot,
+            content:
+              {
+                application/json:
+                  { schema: { type: array, items: { $ref: '#/components/schemas/Position' } } },
+              },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /positions/{positionId}/close-proposal:
+    post:
+      operationId: createCloseProposal
+      tags: [Positions]
+      parameters:
+        - { $ref: '#/components/parameters/PositionId' }
+        - { $ref: '#/components/parameters/AntiForgery' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '201':
+          {
+            description: Risk-evaluated close proposal,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/OrderProposal' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /risk/state:
+    get:
+      operationId: getRiskState
+      tags: [Risk]
+      parameters:
+        - { $ref: '#/components/parameters/AccountId' }
+      responses:
+        '200':
+          {
+            description: Current risk and health snapshot,
+            content: { application/json: { schema: { $ref: '#/components/schemas/RiskState' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /risk/policies/{policyId}:
+    put:
+      operationId: publishRiskPolicyVersion
+      tags: [Risk]
+      parameters:
+        - { $ref: '#/components/parameters/PolicyId' }
+        - { $ref: '#/components/parameters/AntiForgery' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content:
+          {
+            application/json: { schema: { $ref: '#/components/schemas/PublishRiskPolicyRequest' } },
+          }
+      responses:
+        '200':
+          {
+            description: New immutable policy version,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/RiskPolicyVersion' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /risk/kill-switch:
+    post:
+      operationId: activateKillSwitch
+      tags: [Risk]
+      parameters:
+        - { $ref: '#/components/parameters/AntiForgery' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          { application/json: { schema: { $ref: '#/components/schemas/KillSwitchRequest' } } }
+      responses:
+        '202':
+          {
+            description: Kill-switch workflow accepted; outcomes require reconciliation,
+            content:
+              {
+                application/json: { schema: { $ref: '#/components/schemas/KillSwitchOperation' } },
+              },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+  /audit/events:
+    get:
+      operationId: listAuditEvents
+      tags: [Audit]
+      parameters:
+        - { $ref: '#/components/parameters/AccountId' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          {
+            description: Authorized audit page,
+            content: { application/json: { schema: { $ref: '#/components/schemas/AuditPage' } } },
+          }
+        default: { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bffCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-makh-session
+  parameters:
+    AntiForgery:
+      { name: X-CSRF-TOKEN, in: header, required: true, schema: { type: string, minLength: 16 } }
+    IdempotencyKey:
+      { name: Idempotency-Key, in: header, required: true, schema: { type: string, format: uuid } }
+    IfMatch: { name: If-Match, in: header, required: true, schema: { type: string } }
+    Limit:
+      { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+    Cursor: { name: cursor, in: query, schema: { type: string, maxLength: 2048 } }
+    AccountId:
+      { name: accountId, in: query, required: true, schema: { $ref: '#/components/schemas/Uuid' } }
+    SecurityId:
+      { name: securityId, in: path, required: true, schema: { $ref: '#/components/schemas/Uuid' } }
+    WatchlistId:
+      { name: watchlistId, in: path, required: true, schema: { $ref: '#/components/schemas/Uuid' } }
+    OrderId:
+      { name: orderId, in: path, required: true, schema: { $ref: '#/components/schemas/Uuid' } }
+    PositionId:
+      { name: positionId, in: path, required: true, schema: { $ref: '#/components/schemas/Uuid' } }
+    PolicyId:
+      { name: policyId, in: path, required: true, schema: { $ref: '#/components/schemas/Uuid' } }
+  responses:
+    Problem:
+      description: RFC 9457 problem details
+      content:
+        { application/problem+json: { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+  schemas:
+    Uuid: { type: string, format: uuid }
+    UtcDateTime: { type: string, format: date-time }
+    Decimal: { type: string, pattern: '^-?[0-9]+(\.[0-9]+)?$' }
+    AccountMode: { type: string, enum: [Paper, Live] }
+    SessionContext:
+      type: object
+      required: [userId, roles, accountEntitlements, authenticatedAt]
+      properties:
+        userId: { $ref: '#/components/schemas/Uuid' }
+        roles: { type: array, items: { type: string } }
+        accountEntitlements:
+          { type: array, items: { $ref: '#/components/schemas/AccountEntitlement' } }
+        authenticatedAt: { $ref: '#/components/schemas/UtcDateTime' }
+        mfaFreshUntil: { $ref: '#/components/schemas/UtcDateTime' }
+    AccountEntitlement:
+      type: object
+      required: [accountId, accountMode, actions]
+      properties:
+        accountId: { $ref: '#/components/schemas/Uuid' }
+        accountMode: { $ref: '#/components/schemas/AccountMode' }
+        actions: { type: array, items: { type: string } }
+    MarketStatus:
+      type: object
+      required: [sessionState, asOf, dataHealth, brokerHealth, reconciliationHealth]
+      properties:
+        sessionState:
+          { type: string, enum: [Closed, PreMarket, Regular, AfterHours, Halted, Unknown] }
+        asOf: { $ref: '#/components/schemas/UtcDateTime' }
+        dataHealth: { type: string, enum: [Healthy, Degraded, Unavailable] }
+        brokerHealth: { type: string, enum: [Healthy, Degraded, Unavailable, NotConfigured] }
+        reconciliationHealth: { type: string, enum: [Healthy, Mismatch, Unknown] }
+    SecuritySnapshot:
+      type: object
+      required: [securityId, symbol, venue, instrumentType, tradability, asOf]
+      properties:
+        securityId: { $ref: '#/components/schemas/Uuid' }
+        symbol: { type: string }
+        venue: { type: string }
+        instrumentType: { type: string }
+        tradability: { type: string }
+        quote: { $ref: '#/components/schemas/Quote' }
+        metrics: { type: array, items: { $ref: '#/components/schemas/Metric' } }
+        asOf: { $ref: '#/components/schemas/UtcDateTime' }
+    Quote:
+      type: object
+      required: [source, eventTime, receivedAt, quality]
+      properties:
+        bid: { $ref: '#/components/schemas/Decimal' }
+        ask: { $ref: '#/components/schemas/Decimal' }
+        last: { $ref: '#/components/schemas/Decimal' }
+        source: { type: string }
+        eventTime: { $ref: '#/components/schemas/UtcDateTime' }
+        receivedAt: { $ref: '#/components/schemas/UtcDateTime' }
+        quality: { type: string, enum: [Valid, Stale, Suspect, Unavailable] }
+    Metric:
+      type: object
+      required: [code, value, asOf, version, quality]
+      properties:
+        code:
+          {
+            type: string,
+            enum:
+              [Price, GainPercent, RelativeVolume, PublicFloat, Spread, DollarVolume, Liquidity],
+          }
+        value: { $ref: '#/components/schemas/Decimal' }
+        unit: { type: string }
+        asOf: { $ref: '#/components/schemas/UtcDateTime' }
+        version: { type: string }
+        quality: { type: string }
+    Candidate:
+      type: object
+      required: [securityId, rank, qualified, flags, asOf]
+      properties:
+        securityId: { $ref: '#/components/schemas/Uuid' }
+        rank: { type: integer, minimum: 1 }
+        qualified: { type: boolean }
+        flags: { type: array, items: { type: string } }
+        asOf: { $ref: '#/components/schemas/UtcDateTime' }
+    CandidatePage:
+      type: object
+      required: [items, asOf, streamSequence]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Candidate' } }
+        nextCursor: { type: string }
+        asOf: { $ref: '#/components/schemas/UtcDateTime' }
+        streamSequence: { type: integer, minimum: 0 }
+    ScannerRunSnapshot:
+      type: object
+      required:
+        [
+          id,
+          accountId,
+          streamSequence,
+          presetVersionKey,
+          asOf,
+          inputSnapshotHash,
+          dataQuality,
+          candidates,
+        ]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        accountId: { $ref: '#/components/schemas/Uuid' }
+        streamSequence: { type: integer, format: int64, minimum: 1 }
+        presetVersionKey: { type: string }
+        asOf: { $ref: '#/components/schemas/UtcDateTime' }
+        inputSnapshotHash: { type: string, pattern: '^[0-9a-f]{64}$' }
+        dataQuality: { type: string, enum: [Complete, Partial, Failed] }
+        candidates: { type: array, items: { $ref: '#/components/schemas/ScannerRunCandidate' } }
+    ScannerRunCandidate:
+      type: object
+      required: [securityId, symbol, qualified, extremeMoveRisk, exclusionReason]
+      properties:
+        securityId: { $ref: '#/components/schemas/Uuid' }
+        symbol: { type: string }
+        rank: { type: [integer, 'null'], minimum: 1 }
+        qualified: { type: boolean }
+        extremeMoveRisk: { type: boolean }
+        price: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+        gainPercent: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+        relativeVolume: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+        publicFloat: { type: [integer, 'null'], format: int64, minimum: 0 }
+        spreadPercent: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+        dollarVolume: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+        exclusionReason: { type: string }
+    EvidenceItem:
+      type: object
+      required: [evidenceId, sourceType, title, publishedAt, observedAt, trustState]
+      properties:
+        evidenceId: { $ref: '#/components/schemas/Uuid' }
+        sourceType: { type: string, enum: [Filing, Issuer, News, Social] }
+        title: { type: string }
+        sourceUrl: { type: string, format: uri }
+        publishedAt: { $ref: '#/components/schemas/UtcDateTime' }
+        observedAt: { $ref: '#/components/schemas/UtcDateTime' }
+        trustState: { type: string, enum: [Verified, Corroborated, Unverified, Rejected] }
+    EvidencePage:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/EvidenceItem' } }
+        nextCursor: { type: string }
+    WatchlistItem:
+      type: object
+      required: [watchlistId, securityId, addedAt]
+      properties:
+        watchlistId: { $ref: '#/components/schemas/Uuid' }
+        securityId: { $ref: '#/components/schemas/Uuid' }
+        addedAt: { $ref: '#/components/schemas/UtcDateTime' }
+    CreateOrderProposalRequest:
+      type: object
+      additionalProperties: false
+      required: [accountId, securityId, side, orderType, quantity, limitPrice, stopPlan]
+      properties:
+        accountId: { $ref: '#/components/schemas/Uuid' }
+        securityId: { $ref: '#/components/schemas/Uuid' }
+        side: { type: string, enum: [Buy, Sell] }
+        orderType: { type: string, enum: [Limit, MarketableLimit] }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        limitPrice: { $ref: '#/components/schemas/Decimal' }
+        stopPlan: { $ref: '#/components/schemas/StopPlan' }
+        thesis: { type: string, maxLength: 4000 }
+    StopPlan:
+      type: object
+      additionalProperties: false
+      required: [type, stopPrice]
+      properties:
+        type: { type: string, enum: [PriceStop, Trailing, Time, CatalystInvalidation] }
+        stopPrice: { $ref: '#/components/schemas/Decimal' }
+        notes: { type: string, maxLength: 1000 }
+    OrderProposal:
+      type: object
+      required: [proposalId, accountId, accountMode, proposalDigest, status, riskDecision]
+      properties:
+        proposalId: { $ref: '#/components/schemas/Uuid' }
+        accountId: { $ref: '#/components/schemas/Uuid' }
+        accountMode: { $ref: '#/components/schemas/AccountMode' }
+        proposalDigest: { type: string }
+        status: { type: string, enum: [Approved, RiskRejected, Expired, Consumed] }
+        riskDecision: { $ref: '#/components/schemas/RiskDecision' }
+    RiskDecision:
+      type: object
+      required: [decisionId, policyVersion, outcome, evaluatedAt, expiresAt, ruleResults]
+      properties:
+        decisionId: { $ref: '#/components/schemas/Uuid' }
+        policyVersion: { type: string }
+        outcome: { type: string, enum: [Approved, Rejected] }
+        evaluatedAt: { $ref: '#/components/schemas/UtcDateTime' }
+        expiresAt: { $ref: '#/components/schemas/UtcDateTime' }
+        ruleResults: { type: array, items: { $ref: '#/components/schemas/RuleResult' } }
+    RuleResult:
+      type: object
+      required: [code, result, severity]
+      properties:
+        code: { type: string }
+        result: { type: string, enum: [Pass, Warn, Fail] }
+        severity: { type: string, enum: [Information, Warning, HardBlock] }
+        message: { type: string }
+    SubmitOrderRequest:
+      type: object
+      additionalProperties: false
+      required: [proposalId, proposalDigest]
+      properties:
+        proposalId: { $ref: '#/components/schemas/Uuid' }
+        proposalDigest: { type: string }
+    ReplaceOrderRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        limitPrice: { $ref: '#/components/schemas/Decimal' }
+    Order:
+      type: object
+      required:
+        [
+          orderId,
+          accountId,
+          accountMode,
+          securityId,
+          state,
+          quantity,
+          filledQuantity,
+          version,
+          createdAt,
+        ]
+      properties:
+        orderId: { $ref: '#/components/schemas/Uuid' }
+        accountId: { $ref: '#/components/schemas/Uuid' }
+        accountMode: { $ref: '#/components/schemas/AccountMode' }
+        securityId: { $ref: '#/components/schemas/Uuid' }
+        state:
+          {
+            type: string,
+            enum:
+              [
+                PendingSubmit,
+                Accepted,
+                Working,
+                PartiallyFilled,
+                Filled,
+                CancelPending,
+                Cancelled,
+                ReplacePending,
+                Replaced,
+                Rejected,
+                UnknownPendingReconciliation,
+              ],
+          }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        filledQuantity: { $ref: '#/components/schemas/Decimal' }
+        version: { type: integer, minimum: 1 }
+        brokerTime: { $ref: '#/components/schemas/UtcDateTime' }
+        createdAt: { $ref: '#/components/schemas/UtcDateTime' }
+    OrderPage:
+      type: object
+      required: [items, asOf, streamSequence]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Order' } }
+        nextCursor: { type: string }
+        asOf: { $ref: '#/components/schemas/UtcDateTime' }
+        streamSequence: { type: integer, minimum: 0 }
+    Position:
+      type: object
+      required:
+        [positionId, accountId, accountMode, securityId, quantity, reconciliationState, version]
+      properties:
+        positionId: { $ref: '#/components/schemas/Uuid' }
+        accountId: { $ref: '#/components/schemas/Uuid' }
+        accountMode: { $ref: '#/components/schemas/AccountMode' }
+        securityId: { $ref: '#/components/schemas/Uuid' }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        reconciliationState: { type: string, enum: [Matched, Mismatch, Unknown] }
+        version: { type: integer, minimum: 1 }
+    RiskState:
+      type: object
+      required: [accountId, accountMode, policyVersion, entryAllowed, health, asOf]
+      properties:
+        accountId: { $ref: '#/components/schemas/Uuid' }
+        accountMode: { $ref: '#/components/schemas/AccountMode' }
+        policyVersion: { type: string }
+        entryAllowed: { type: boolean }
+        health:
+          {
+            type: string,
+            enum: [Healthy, Paused, Breached, DependencyUnknown, ReconciliationMismatch],
+          }
+        remainingRisk: { $ref: '#/components/schemas/Decimal' }
+        asOf: { $ref: '#/components/schemas/UtcDateTime' }
+    PublishRiskPolicyRequest:
+      type: object
+      additionalProperties: false
+      required: [effectiveAt, reason, rules]
+      properties:
+        effectiveAt: { $ref: '#/components/schemas/UtcDateTime' }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        rules: { type: array, minItems: 1, items: { type: object } }
+    RiskPolicyVersion:
+      type: object
+      required: [policyId, version, effectiveAt, status]
+      properties:
+        policyId: { $ref: '#/components/schemas/Uuid' }
+        version: { type: string }
+        effectiveAt: { $ref: '#/components/schemas/UtcDateTime' }
+        status: { type: string, enum: [Draft, Scheduled, Active, Superseded] }
+    KillSwitchRequest:
+      type: object
+      additionalProperties: false
+      required: [accountId, action, reason, confirmation]
+      properties:
+        accountId: { $ref: '#/components/schemas/Uuid' }
+        action: { type: string, enum: [BlockEntries, CancelWorking, Liquidate] }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        confirmation: { type: string, minLength: 1 }
+    KillSwitchOperation:
+      type: object
+      required: [operationId, accountId, accountMode, action, state, createdAt]
+      properties:
+        operationId: { $ref: '#/components/schemas/Uuid' }
+        accountId: { $ref: '#/components/schemas/Uuid' }
+        accountMode: { $ref: '#/components/schemas/AccountMode' }
+        action: { type: string }
+        state:
+          {
+            type: string,
+            enum:
+              [Accepted, InProgress, PartiallyCompleted, Completed, Failed, ReconciliationRequired],
+          }
+        createdAt: { $ref: '#/components/schemas/UtcDateTime' }
+    AuditEvent:
+      type: object
+      required: [eventId, eventType, occurredAt, correlationId]
+      properties:
+        eventId: { $ref: '#/components/schemas/Uuid' }
+        eventType: { type: string }
+        occurredAt: { $ref: '#/components/schemas/UtcDateTime' }
+        correlationId: { type: string }
+        reason: { type: string }
+    AuditPage:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/AuditEvent' } }
+        nextCursor: { type: string }
+    ProblemDetails:
+      type: object
+      required: [type, title, status, code, correlationId]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string }
+        instance: { type: string }
+        code: { type: string }
+        correlationId: { type: string }
+        retryable: { type: boolean }
+        retryAfter: { oneOf: [{ type: integer, minimum: 0 }, { type: string, format: date-time }] }
+        decisionId: { $ref: '#/components/schemas/Uuid' }
+        policyVersion: { type: string }
+        errors: { type: array, items: { $ref: '#/components/schemas/FieldError' } }
+    FieldError:
+      type: object
+      required: [field, code, message]
+      properties:
+        field: { type: string }
+        code: { type: string }
+        message: { type: string }

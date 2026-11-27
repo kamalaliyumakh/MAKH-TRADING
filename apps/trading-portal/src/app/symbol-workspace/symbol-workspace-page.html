@@ -1,0 +1,198 @@
+<section class="workspace" aria-labelledby="workspace-title">
+  <a class="back" routerLink="/app/scanner">← Back to candidate scanner</a>
+
+  @if (workspace(); as workspace) {
+    <div class="title-row">
+      <div>
+        <p class="eyebrow">Synthetic security workspace</p>
+        <h1 id="workspace-title">{{ workspace.symbol }} · {{ workspace.companyName }}</h1>
+        <p class="lede">
+          {{ workspace.venueMic }} · {{ workspace.tradability }} · Snapshot
+          {{ workspace.asOf | date: 'medium' : 'UTC' }} UTC
+        </p>
+      </div>
+      <span class="quote-state" [attr.data-state]="workspace.quote.state">
+        {{ workspace.quote.state }} quote · {{ workspace.quote.ageSeconds }}s old
+      </span>
+    </div>
+
+    <aside class="warning" role="note">
+      <strong>Extreme move · elevated risk, not a buy signal</strong>
+      <span>
+        This workspace is read-only. Evidence review cannot create a catalyst decision, risk
+        approval, proposal, or order.
+      </span>
+    </aside>
+
+    <div class="market-grid">
+      <article class="panel quote-panel" aria-labelledby="quote-title">
+        <div class="panel-title">
+          <div>
+            <p class="kicker">Market snapshot</p>
+            <h2 id="quote-title">Quote and price trace</h2>
+          </div>
+          <strong class="last">{{ workspace.quote.last | currency: 'USD' }}</strong>
+        </div>
+        <dl class="quote-facts">
+          <div>
+            <dt>Bid</dt>
+            <dd>{{ workspace.quote.bid | currency: 'USD' }}</dd>
+          </div>
+          <div>
+            <dt>Ask</dt>
+            <dd>{{ workspace.quote.ask | currency: 'USD' }}</dd>
+          </div>
+          <div>
+            <dt>Spread</dt>
+            <dd>{{ workspace.metrics.spreadPercent | number: '1.2-2' }}%</dd>
+          </div>
+        </dl>
+        <figure>
+          <svg viewBox="0 0 600 190" role="img" aria-labelledby="chart-title chart-description">
+            <title id="chart-title">
+              Synthetic intraday price trace for {{ workspace.symbol }}
+            </title>
+            <desc id="chart-description">
+              Price rises from {{ workspace.pricePoints[0].price | currency: 'USD' }} at
+              {{ workspace.pricePoints[0].time }} to
+              {{ workspace.pricePoints[workspace.pricePoints.length - 1].price | currency: 'USD' }}
+              at {{ workspace.pricePoints[workspace.pricePoints.length - 1].time }}, with one
+              pullback.
+            </desc>
+            <defs>
+              <linearGradient id="workspace-area" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#2e6ce6" stop-opacity=".25" />
+                <stop offset="1" stop-color="#2e6ce6" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <g class="chart-grid">
+              <line x1="10" y1="30" x2="590" y2="30" />
+              <line x1="10" y1="100" x2="590" y2="100" />
+              <line x1="10" y1="170" x2="590" y2="170" />
+            </g>
+            <polygon class="chart-area" [attr.points]="chartArea(workspace)" />
+            <polyline [attr.points]="chartPoints(workspace)" />
+            <circle cx="590" [attr.cy]="chartEndY(workspace)" r="6" />
+          </svg>
+          <figcaption>Illustrative local fixture · not executable market data</figcaption>
+        </figure>
+      </article>
+
+      <article class="panel" aria-labelledby="metrics-title">
+        <p class="kicker">Scanner evidence</p>
+        <h2 id="metrics-title">Rule metrics</h2>
+        <dl class="metric-list">
+          <div>
+            <dt>Price rule</dt>
+            <dd>{{ workspace.quote.last | currency: 'USD' }} · within $3–$7</dd>
+          </div>
+          <div>
+            <dt>Relative volume</dt>
+            <dd>{{ workspace.metrics.relativeVolume | number: '1.1-1' }}× · passes 3×</dd>
+          </div>
+          <div>
+            <dt>Public float</dt>
+            <dd>{{ workspace.metrics.publicFloat | number }} · below 500,000</dd>
+          </div>
+          <div>
+            <dt>Intraday gain</dt>
+            <dd>{{ workspace.metrics.gainPercent | number: '1.0-0' }}% · elevated-risk band</dd>
+          </div>
+          <div>
+            <dt>Dollar volume</dt>
+            <dd>{{ workspace.metrics.dollarVolume | currency: 'USD' : 'symbol' : '1.0-0' }}</dd>
+          </div>
+        </dl>
+        <p class="boundary">
+          Passing discovery rules does not establish suitability, liquidity, catalyst validity, or
+          order authority.
+        </p>
+      </article>
+    </div>
+
+    <article class="panel" aria-labelledby="evidence-title">
+      <div class="panel-title">
+        <div>
+          <p class="kicker">Primary sources before attention</p>
+          <h2 id="evidence-title">Catalyst evidence</h2>
+        </div>
+        <span class="verification">Catalyst: Not verified</span>
+      </div>
+      <div class="evidence-list">
+        @for (item of workspace.evidence; track item.id) {
+          <section class="evidence-item" [attr.data-trust]="item.trust">
+            <div class="evidence-heading">
+              <span class="trust">{{ item.trust }}</span>
+              <span>{{ item.kind }}</span>
+            </div>
+            <h3>{{ item.headline }}</h3>
+            <p>{{ item.source }} · Observed {{ item.observedAt | date: 'short' : 'UTC' }} UTC</p>
+            <p class="limitation">{{ item.limitation }}</p>
+          </section>
+        }
+      </div>
+      <p class="snapshot">Evidence snapshot {{ workspace.evidenceSnapshotHash.slice(0, 16) }}…</p>
+    </article>
+
+    <div class="review-grid">
+      <article class="panel" aria-labelledby="thesis-title">
+        <p class="kicker">Read-only draft</p>
+        <h2 id="thesis-title">Thesis and invalidation</h2>
+        <dl class="thesis-list">
+          <div>
+            <dt>Working thesis</dt>
+            <dd>{{ workspace.thesis.summary }}</dd>
+          </div>
+          <div>
+            <dt>Catalyst status</dt>
+            <dd>{{ workspace.thesis.catalystStatus }}</dd>
+          </div>
+          <div>
+            <dt>Invalidation</dt>
+            <dd>{{ workspace.thesis.invalidation }}</dd>
+          </div>
+          <div>
+            <dt>Exit plan</dt>
+            <dd>{{ workspace.thesis.exitPlan }}</dd>
+          </div>
+        </dl>
+      </article>
+
+      <article class="panel proposal" aria-labelledby="proposal-title">
+        <p class="kicker">Workflow unavailable</p>
+        <h2 id="proposal-title">Proposal readiness</h2>
+        <ol>
+          <li data-state="reviewed">
+            <strong>Intent</strong><span>Review only; no side or quantity captured</span>
+          </li>
+          <li data-state="blocked">
+            <strong>Exit plan</strong><span>Missing approved risk-bounded plan</span>
+          </li>
+          <li data-state="blocked">
+            <strong>Risk result</strong><span>Risk service is not connected</span>
+          </li>
+          <li data-state="blocked">
+            <strong>Review</strong><span>Proposal creation and submission are disabled</span>
+          </li>
+        </ol>
+        <p class="boundary">
+          <strong>Entry locked.</strong> No broker credentials, paper account, risk decision, or
+          submission control is present.
+        </p>
+      </article>
+    </div>
+  } @else if (state() === 'Loading') {
+    <article class="state-panel" role="status" aria-live="polite">
+      <p class="eyebrow">Read-only workspace</p>
+      <h1 id="workspace-title">Loading symbol workspace</h1>
+      <p>{{ message() }}</p>
+    </article>
+  } @else {
+    <article class="state-panel state-panel--blocked" role="alert">
+      <p class="eyebrow">Workspace {{ state().toLowerCase() }}</p>
+      <h1 id="workspace-title">No symbol data displayed</h1>
+      <p>{{ message() }}</p>
+      <p>No proposal or order authority has been created.</p>
+    </article>
+  }
+</section>

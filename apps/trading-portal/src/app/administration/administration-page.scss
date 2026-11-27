@@ -1,0 +1,235 @@
+.admin {
+  display: grid;
+  min-width: 0;
+  gap: var(--makh-space-5);
+}
+.admin::before {
+  position: fixed;
+  inset: 4.75rem 0 auto;
+  height: 18rem;
+  z-index: -1;
+  background: linear-gradient(180deg, #edf5fa, transparent);
+  content: '';
+}
+.title-row,
+.panel-heading,
+.role-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1rem;
+}
+.eyebrow,
+.kicker {
+  margin: 0 0 0.5rem;
+  color: var(--makh-color-brand-blue);
+  font-size: var(--makh-text-sm);
+  font-weight: 700;
+}
+h1 {
+  margin: 0;
+  color: var(--makh-color-brand-navy);
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.035em;
+}
+h2 {
+  margin: 0;
+}
+.lede,
+.snapshot,
+.snapshot-id {
+  color: var(--makh-color-neutral-700);
+  line-height: 1.5;
+}
+.read-only,
+.review,
+.state,
+.result {
+  width: fit-content;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid #91a4b7;
+  border-radius: 999px;
+  background: #f4f7fa;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+.boundary {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem;
+  color: #7a271a;
+  border: 1px solid #c2410c;
+  border-radius: 0.75rem;
+  background: #fff1ed;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+.summary-grid article,
+.panel {
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--makh-color-neutral-100);
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: var(--makh-shadow-sm);
+}
+.summary-grid article {
+  display: grid;
+  gap: 0.35rem;
+}
+.summary-grid span,
+.summary-grid small {
+  color: var(--makh-color-neutral-700);
+}
+.summary-grid strong {
+  color: var(--makh-color-brand-navy);
+  font-size: 1.8rem;
+}
+.summary-grid .warning {
+  color: #9b2c2c;
+}
+.roles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.roles section {
+  padding: 1rem;
+  border: 1px solid #dce5ed;
+  border-radius: 0.7rem;
+}
+.role-head div {
+  display: grid;
+  gap: 0.3rem;
+}
+.role-head div span,
+footer,
+.configs li span,
+.configs small,
+.audit li div span,
+.audit li small {
+  color: var(--makh-color-neutral-700);
+  font-size: 0.76rem;
+}
+.review[data-review='Due soon'] {
+  color: #744210;
+  border-color: #d69e2e;
+  background: #fff8df;
+}
+.coverage {
+  height: 0.45rem;
+  margin: 1rem 0 0.65rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5ebf0;
+}
+.coverage span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #16876a;
+}
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.operations-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.configs,
+.audit {
+  display: grid;
+  gap: 0.7rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.configs li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem;
+  border-left: 0.25rem solid #16876a;
+  background: #f3faf7;
+}
+.configs li[data-state='Unavailable'] {
+  border-left-color: #c2410c;
+  background: #fff1ed;
+}
+.configs li[data-state='Draft'] {
+  border-left-color: #b7791f;
+  background: #fff8df;
+}
+.configs li div {
+  display: grid;
+  gap: 0.25rem;
+}
+.configs li div:last-child {
+  justify-items: end;
+}
+.audit li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.8rem;
+  align-items: start;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--makh-color-neutral-100);
+}
+.audit li div {
+  display: grid;
+  gap: 0.2rem;
+}
+.sequence {
+  color: var(--makh-color-brand-blue);
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+.audit li[data-result='Denied'] .result {
+  color: #9b2c2c;
+  border-color: #c2410c;
+  background: #fff1ed;
+}
+.snapshot-id {
+  margin: 0;
+  font-size: 0.75rem;
+}
+@media (max-width: 900px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .roles,
+  .operations-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .title-row,
+  .panel-heading {
+    display: grid;
+  }
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .configs li {
+    display: grid;
+  }
+  .configs li div:last-child {
+    justify-items: start;
+  }
+  .audit li {
+    grid-template-columns: auto 1fr;
+  }
+  .audit .result {
+    grid-column: 2;
+  }
+  footer {
+    display: grid;
+  }
+}

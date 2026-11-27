@@ -1,0 +1,120 @@
+.trading,
+.layout,
+.card,
+.ticket,
+.confirmation {
+  display: grid;
+  gap: var(--makh-space-4);
+}
+.page-heading,
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--makh-space-4);
+}
+h1,
+h2,
+p {
+  margin: 0;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--makh-color-brand-blue);
+}
+.paper-badge,
+.state {
+  padding: var(--makh-space-2);
+  border-radius: var(--makh-radius-md);
+  background: var(--makh-color-warning-surface);
+  font-weight: 700;
+}
+.lockout,
+.warning {
+  display: grid;
+  gap: var(--makh-space-1);
+  padding: var(--makh-space-4);
+  border-left: 0.3rem solid #b42318;
+  background: #fff1f0;
+}
+.layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.card {
+  padding: var(--makh-space-5);
+  border: 1px solid var(--makh-color-neutral-200);
+  border-radius: var(--makh-radius-lg);
+  background: var(--makh-color-neutral-0);
+}
+label {
+  display: grid;
+  gap: var(--makh-space-2);
+  font-weight: 700;
+}
+input,
+select,
+button {
+  font: inherit;
+  padding: 0.75rem;
+  border: 1px solid var(--makh-color-neutral-400);
+  border-radius: var(--makh-radius-md);
+}
+button {
+  border: 0;
+  color: white;
+  background: var(--makh-color-brand-blue);
+  font-weight: 700;
+}
+button:disabled {
+  color: var(--makh-color-neutral-700);
+  background: var(--makh-color-neutral-200);
+}
+button.secondary {
+  color: var(--makh-color-brand-navy);
+  background: transparent;
+  border: 1px solid var(--makh-color-neutral-400);
+}
+dl {
+  display: grid;
+  gap: var(--makh-space-2);
+  margin: 0;
+}
+dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+dd {
+  font-weight: 700;
+}
+.hint {
+  color: var(--makh-color-neutral-700);
+  font-size: 0.9rem;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+th,
+td {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--makh-color-neutral-200);
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .page-heading,
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

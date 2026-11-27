@@ -1,0 +1,32 @@
+# Generated QA and preview artifacts
+.docx_qa*/
+.fsd_qa*/
+
+# Local dependencies and caches
+node_modules
+.tools/
+.angular/
+.nx/
+.cache/
+.pnpm-store/
+.tmp/
+outputs/
+
+# Build outputs
+bin/
+obj/
+dist/
+artifacts/
+coverage/
+TestResults/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+appsettings.Development.local.json
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/

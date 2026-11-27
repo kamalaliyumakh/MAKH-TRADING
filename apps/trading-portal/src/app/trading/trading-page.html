@@ -1,0 +1,185 @@
+<section class="trading" aria-labelledby="trading-title">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Paper workspace</p>
+      <h1 id="trading-title">Orders and positions</h1>
+    </div>
+    <span class="paper-badge">PAPER · simulated only</span>
+  </header>
+
+  <aside class="lockout" role="alert">
+    <strong>New entries are locked</strong>
+    <span
+      >Reconciliation: {{ trading.reconciliation() }}. Broker and risk authority are
+      unavailable.</span
+    >
+    @if (trading.contextError()) {
+      <span>{{ trading.contextError() }} Synthetic account evidence has been cleared.</span>
+    }
+  </aside>
+
+  <div class="layout">
+    <form class="ticket card" [formGroup]="ticket" (ngSubmit)="review()">
+      <div>
+        <p class="eyebrow">Order ticket</p>
+        <h2>Prepare a paper limit order</h2>
+      </div>
+      <label>Symbol<input formControlName="symbol" maxlength="5" autocomplete="off" /></label>
+      <label
+        >Side<select formControlName="side">
+          <option>Buy</option>
+          <option>Sell</option>
+        </select></label
+      >
+      <label>Quantity<input type="number" formControlName="quantity" min="1" max="500000" /></label>
+      <label
+        >Limit price<input type="number" formControlName="limitPrice" min="3" max="7" step="0.01"
+      /></label>
+      <label
+        >Protective stop<input type="number" formControlName="stopPrice" min="0.01" step="0.01"
+      /></label>
+      <p class="hint">
+        Discovery guardrails: price $3–$7 and public float up to 500,000 shares. Order quantity is
+        separate and always requires final server-side position, exposure and loss-limit checks.
+      </p>
+      <button type="submit" [disabled]="ticket.invalid || trading.accountId() === null">
+        Review paper order
+      </button>
+    </form>
+
+    <section class="confirmation card" aria-live="polite">
+      <p class="eyebrow">Required confirmation</p>
+      <h2>Review before submission</h2>
+      @if (trading.confirmation(); as order) {
+        <dl>
+          <div>
+            <dt>Instrument</dt>
+            <dd>{{ order.symbol }}</dd>
+          </div>
+          <div>
+            <dt>Intent</dt>
+            <dd>{{ order.side }} {{ order.quantity }} shares</dd>
+          </div>
+          <div>
+            <dt>Limit</dt>
+            <dd>{{ order.limitPrice | currency: 'USD' }}</dd>
+          </div>
+          <div>
+            <dt>Estimated notional</dt>
+            <dd>{{ order.estimatedNotional | currency: 'USD' }}</dd>
+          </div>
+          <div>
+            <dt>Protection</dt>
+            <dd>{{ order.stopPrice ? (order.stopPrice | currency: 'USD') : 'Not set' }}</dd>
+          </div>
+          <div>
+            <dt>Review expires</dt>
+            <dd>{{ order.expiresAt }}</dd>
+          </div>
+        </dl>
+        <div class="warning">
+          <strong>{{ order.mode }} order only</strong
+          ><span>{{ order.authority }}. Price, fill and profit are not guaranteed.</span>
+        </div>
+        <button type="button" disabled>Submit unavailable — entry locked</button>
+        <button class="secondary" type="button" (click)="clearConfirmation()">Edit ticket</button>
+      } @else {
+        @if (trading.reviewError()) {
+          <p role="alert">{{ trading.reviewError() }}</p>
+        }
+        <p>
+          Complete the ticket and select “Review paper order.” No order is created at this step.
+        </p>
+      }
+    </section>
+  </div>
+
+  <section class="card table-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Synthetic ledger</p>
+        <h2>Orders</h2>
+      </div>
+      <span>Not broker authoritative</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Symbol</th>
+            <th>Side</th>
+            <th>Quantity</th>
+            <th>Filled</th>
+            <th>Limit</th>
+            <th>State</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of trading.orders(); track order.id) {
+            <tr>
+              <td>{{ order.id }}</td>
+              <td>
+                <strong>{{ order.symbol }}</strong>
+              </td>
+              <td>{{ order.side }}</td>
+              <td>{{ order.quantity }}</td>
+              <td>{{ order.filled }}</td>
+              <td>{{ order.limitPrice | currency: 'USD' }}</td>
+              <td>
+                <span class="state">{{ order.state }}</span>
+              </td>
+              <td>{{ order.updatedAt }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card table-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Synthetic estimate</p>
+        <h2>Positions and P&amp;L</h2>
+      </div>
+      <span>As of {{ trading.asOf() }}</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Quantity</th>
+            <th>Average cost</th>
+            <th>Mark</th>
+            <th>Realized P&amp;L</th>
+            <th>Unrealized P&amp;L</th>
+            <th>Protection</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (position of trading.positions(); track position.symbol) {
+            <tr>
+              <td>
+                <strong>{{ position.symbol }}</strong>
+              </td>
+              <td>{{ position.quantity }}</td>
+              <td>{{ position.averageCost | currency: 'USD' }}</td>
+              <td>{{ position.mark | currency: 'USD' }}</td>
+              <td>{{ position.realizedPnl | currency: 'USD' }}</td>
+              <td>{{ position.unrealizedPnl | currency: 'USD' }}</td>
+              <td>
+                <span class="state">{{ position.protection }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="hint">
+      P&amp;L is a timestamped synthetic estimate, not reconciled broker or tax truth.
+    </p>
+  </section>
+</section>

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://makh.invalid/schemas/environment.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "dataClass", "accountMode", "entryLocked", "telemetry", "database", "identity", "trading"],
+  "properties": {
+    "name": { "enum": ["dev", "test", "staging"] },
+    "dataClass": { "const": "synthetic-only" },
+    "accountMode": { "enum": ["synthetic", "paper"] },
+    "entryLocked": { "const": true },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["otlpRequired", "retentionDays"],
+      "properties": {
+        "otlpRequired": { "type": "boolean" },
+        "retentionDays": { "type": "integer", "minimum": 7, "maximum": 90 }
+      }
+    },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "backupRetentionDays",
+        "pointInTimeRestore",
+        "rpoMinutes",
+        "rtoMinutes",
+        "ownerRole",
+        "migrationRole",
+        "runtimeRole",
+        "runtimeDdlAllowed"
+      ],
+      "properties": {
+        "version": { "const": "18" },
+        "backupRetentionDays": { "type": "integer", "minimum": 7, "maximum": 35 },
+        "pointInTimeRestore": { "const": true },
+        "rpoMinutes": { "const": 5 },
+        "rtoMinutes": { "const": 60 },
+        "ownerRole": { "const": "makh_owner" },
+        "migrationRole": { "const": "makh_migrator" },
+        "runtimeRole": { "const": "makh_runtime" },
+        "runtimeDdlAllowed": { "const": false }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providerConfigured", "sharedKeyRingRequired", "certificateProtectionRequired", "rotationDays", "recoveryExerciseRequired"],
+      "properties": {
+        "providerConfigured": { "const": false },
+        "sharedKeyRingRequired": { "type": "boolean" },
+        "certificateProtectionRequired": { "type": "boolean" },
+        "rotationDays": { "type": "integer", "minimum": 30, "maximum": 90 },
+        "recoveryExerciseRequired": { "const": true }
+      }
+    },
+    "trading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paperConnectivityAllowed", "liveConnectivityAllowed", "brokerCredentialsAllowed"],
+      "properties": {
+        "paperConnectivityAllowed": { "const": false },
+        "liveConnectivityAllowed": { "const": false },
+        "brokerCredentialsAllowed": { "const": false }
+      }
+    }
+  }
+}

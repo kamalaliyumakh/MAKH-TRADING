@@ -167,7 +167,7 @@ jobs:
           dotnet list MAKH.Trading.slnx package --vulnerable --include-transitive | tee artifacts/dotnet-vulnerabilities.txt
           ! grep -q "has the following vulnerable packages" artifacts/dotnet-vulnerabilities.txt
       - name: Generate CycloneDX SBOM
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56 # v0.24.4
         with:
           path: .
           format: cyclonedx-json
